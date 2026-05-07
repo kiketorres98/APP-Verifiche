@@ -3,11 +3,17 @@ import { useParams, useNavigate } from 'react-router-dom'
 import axios from 'axios'
 
 const API = '/api'
+const TEACHER_PASSWORD = '333Madrid03'
 
 export default function ResultsPage() {
   const { quizId, teacherLinkId } = useParams()
   const navigate = useNavigate()
 
+  const [authenticated, setAuthenticated] = useState(
+    sessionStorage.getItem('teacher_auth') === 'true'
+  )
+  const [passwordInput, setPasswordInput] = useState('')
+  const [passwordError, setPasswordError] = useState('')
   const [data, setData] = useState(null)
   const [questions, setQuestions] = useState([])
   const [submissions, setSubmissions] = useState([])
@@ -64,6 +70,51 @@ export default function ResultsPage() {
     } catch {
       alert('Errore durante l\'esportazione.')
     }
+  }
+
+  const handleLogin = () => {
+    if (passwordInput === TEACHER_PASSWORD) {
+      setAuthenticated(true)
+      sessionStorage.setItem('teacher_auth', 'true')
+      setPasswordError('')
+    } else {
+      setPasswordError('Password errata')
+    }
+  }
+
+  if (!authenticated) {
+    return (
+      <div className="flex-center" style={{ minHeight: '100vh', background: 'var(--bg)' }}>
+        <div className="card text-center" style={{ maxWidth: '400px', width: '100%' }}>
+          <h2 style={{ marginBottom: '8px' }}>Risultati Verifica</h2>
+          <p style={{ color: 'var(--text-muted)', marginBottom: '24px' }}>
+            Inserisci la password per vedere i risultati
+          </p>
+          <div className="form-group" style={{ marginBottom: '16px' }}>
+            <input
+              className="form-input"
+              type="password"
+              value={passwordInput}
+              onChange={(e) => setPasswordInput(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
+              placeholder="Password"
+              style={{ textAlign: 'center', fontSize: '1.1rem' }}
+            />
+          </div>
+          {passwordError && (
+            <p style={{ color: 'var(--danger)', marginBottom: '16px', fontWeight: '500' }}>
+              {passwordError}
+            </p>
+          )}
+          <button className="btn btn-primary btn-lg" onClick={handleLogin} style={{ width: '100%' }}>
+            Accedi
+          </button>
+          <button className="btn btn-ghost btn-sm" onClick={() => navigate('/')} style={{ marginTop: '16px' }}>
+            ← Torna alla Home
+          </button>
+        </div>
+      </div>
+    )
   }
 
   if (loading) {

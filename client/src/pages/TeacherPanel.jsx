@@ -22,9 +22,16 @@ const QUESTION_TYPE_LABELS = {
   matching: 'Abbinamento',
 }
 
+const TEACHER_PASSWORD = '333Madrid03'
+
 export default function TeacherPanel() {
   const navigate = useNavigate()
   const fileInputRef = useRef(null)
+  const [authenticated, setAuthenticated] = useState(
+    sessionStorage.getItem('teacher_auth') === 'true'
+  )
+  const [passwordInput, setPasswordInput] = useState('')
+  const [passwordError, setPasswordError] = useState('')
   const [step, setStep] = useState(1)
   const [file, setFile] = useState(null)
   const [dragOver, setDragOver] = useState(false)
@@ -36,6 +43,16 @@ export default function TeacherPanel() {
   const [error, setError] = useState('')
   const [createdQuiz, setCreatedQuiz] = useState(null)
   const [copied, setCopied] = useState('')
+
+  const handleLogin = () => {
+    if (passwordInput === TEACHER_PASSWORD) {
+      setAuthenticated(true)
+      sessionStorage.setItem('teacher_auth', 'true')
+      setPasswordError('')
+    } else {
+      setPasswordError('Password errata')
+    }
+  }
 
   const handleFile = useCallback(async (selectedFile) => {
     if (!selectedFile) return
@@ -151,6 +168,41 @@ export default function TeacherPanel() {
   }
 
   const stepLabels = ['Carica', 'Configura', 'Anteprima', 'Crea']
+
+  if (!authenticated) {
+    return (
+      <div className="flex-center" style={{ minHeight: '100vh', background: 'var(--bg)' }}>
+        <div className="card text-center" style={{ maxWidth: '400px', width: '100%' }}>
+          <h2 style={{ marginBottom: '8px' }}>Pannello Insegnante</h2>
+          <p style={{ color: 'var(--text-muted)', marginBottom: '24px' }}>
+            Inserisci la password per accedere
+          </p>
+          <div className="form-group" style={{ marginBottom: '16px' }}>
+            <input
+              className="form-input"
+              type="password"
+              value={passwordInput}
+              onChange={(e) => setPasswordInput(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
+              placeholder="Password"
+              style={{ textAlign: 'center', fontSize: '1.1rem' }}
+            />
+          </div>
+          {passwordError && (
+            <p style={{ color: 'var(--danger)', marginBottom: '16px', fontWeight: '500' }}>
+              {passwordError}
+            </p>
+          )}
+          <button className="btn btn-primary btn-lg" onClick={handleLogin} style={{ width: '100%' }}>
+            Accedi
+          </button>
+          <button className="btn btn-ghost btn-sm" onClick={() => navigate('/')} style={{ marginTop: '16px' }}>
+            ← Torna alla Home
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
@@ -551,6 +603,25 @@ export default function TeacherPanel() {
                 >
                   {copied === 'teacher' ? 'Copiato!' : 'Copia Link Risultati'}
                 </button>
+              </div>
+
+              <div style={{
+                background: 'var(--bg)', borderRadius: 'var(--radius-sm)',
+                padding: '20px', marginBottom: '24px', border: '1px solid var(--border)',
+              }}>
+                <p style={{ fontWeight: '600', marginBottom: '8px', color: 'var(--text)' }}>
+                  Invia il link via Email
+                </p>
+                <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '12px' }}>
+                  Apri la tua email con il link della verifica già pronto da inviare
+                </p>
+                <a
+                  href={`mailto:?subject=${encodeURIComponent(`Verifica: ${title}`)}&body=${encodeURIComponent(`Ciao!\n\nEcco il link per completare la verifica "${title}":\n\n${createdQuiz.studentLink}\n\nBuon lavoro!`)}`}
+                  className="btn btn-secondary"
+                  style={{ width: '100%', display: 'inline-block', textAlign: 'center', textDecoration: 'none' }}
+                >
+                  Invia via Email
+                </a>
               </div>
 
               <button className="btn btn-ghost" onClick={() => navigate('/')}>
