@@ -1,0 +1,10 @@
+node_modules/
+client/dist/
+server/uploads/
+server/verifiche.db
+server/verifiche.db-shm
+server/verifiche.db-wal
+.claude/
+templates/node_modules/
+templates/package-lock.json
+templates/package.json
